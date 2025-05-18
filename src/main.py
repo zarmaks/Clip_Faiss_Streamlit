@@ -79,6 +79,19 @@ def delete_index_files():
     except Exception as e:
         st.error(f"Error removing index files: {str(e)}")
 
+# Delete all images in UPLOAD_DIR at app startup (local and cloud)
+if "uploads_cleared" not in st.session_state:
+    def clear_uploaded_images():
+        for fname in os.listdir(UPLOAD_DIR):
+            fpath = os.path.join(UPLOAD_DIR, fname)
+            if os.path.isfile(fpath) and fname.lower().endswith((".jpg", ".jpeg", ".png")):
+                try:
+                    os.remove(fpath)
+                except Exception:
+                    pass  # Ignore errors
+    clear_uploaded_images()
+    st.session_state.uploads_cleared = True
+
 # Create embeddings and index (if it doesn't exist)
 # NO caching decorator to ensure it runs every time
 def prepare_index(_images_path=None):
@@ -229,34 +242,33 @@ def get_embeddings_for_tsne(model, index, image_paths):
     Returns:
         Numpy array of embeddings
     """
+    if model is None:
+        st.error("CLIP model is not loaded. Cannot extract embeddings.")
+        return None, []
+    
     # We'll regenerate embeddings from the images directly
     # This avoids the 'reconstruct not implemented' error with certain FAISS indices
     embeddings = []
     valid_paths = []
-    
-    with st.spinner(f"Processing images for t-SNE visualization (0/{len(image_paths)})..."):
-        for i, img_path in enumerate(image_paths):
-            try:
-                # Update progress message
-                if i % 10 == 0:
-                    st.spinner(f"Processing images for t-SNE visualization ({i}/{len(image_paths)})...")
-                
-                # Generate embedding
-                image = Image.open(img_path)
-                embedding = model.encode(image)
-                
-                # Store embedding and path
-                embeddings.append(embedding)
-                valid_paths.append(img_path)
-            except Exception as e:
-                pass  # Skip problematic images silently
-    
-    # Convert to numpy array
+    total = len(image_paths)
+    progress = st.progress(0, text="Extracting image embeddings...")
+    for i, img_path in enumerate(image_paths):
+        try:
+            # Show progress in the Streamlit UI
+            image = Image.open(img_path)
+            embedding = model.encode(image)
+            embeddings.append(embedding)
+            valid_paths.append(img_path)
+        except Exception as e:
+            st.warning(f"Error processing {img_path}: {e}")
+            break  # Stop on first error for clarity
+        progress.progress((i+1)/total, text=f"{i+1}/{total} images processed")
     if embeddings:
         embeddings_array = np.array(embeddings)
         return embeddings_array, valid_paths
     else:
-        raise ValueError("No valid embeddings could be generated")
+        st.error("No valid embeddings could be generated.")
+        return None, []
 
 # Function to create t-SNE visualization of all images
 def create_tsne_visualization(embeddings, image_paths, perplexity=15, n_iter=1000, thumbnail_size=(50, 50)):
@@ -350,29 +362,49 @@ except Exception as e:
 with st.sidebar:
     st.header("⚙️ Search Options")
     
-    # Directory selection
-    st.subheader("📁 Image Directory")
-    current_dir = st.text_input("Current image folder", value=st.session_state.custom_images_path)
-      # Change directory button
-    if st.button("📂 Set Folder Path") and current_dir:
-        try:
-            # Create the directory if it doesn't exist
-            os.makedirs(current_dir, exist_ok=True)
-            
-            # Delete index files to force regeneration
+    # Image selection (manual, both local and cloud)
+    st.subheader("🖼️ Select images for search database")
+    # Dynamic key for uploader to prevent re-upload on rerun
+    if "uploader_key" not in st.session_state:
+        st.session_state.uploader_key = str(uuid.uuid4())
+    selected_files = st.file_uploader(
+        "Select images for the search database:",
+        type=["jpg", "jpeg", "png"],
+        accept_multiple_files=True,
+        key=st.session_state.uploader_key
+    )
+    if selected_files:
+        added = 0
+        error_files = []
+        for uploaded_file in selected_files:
+            orig_name = getattr(uploaded_file, 'name', None) or f'file_{uuid.uuid4()}.jpg'
+            file_ext = orig_name.split('.')[-1] if '.' in orig_name else 'jpg'
+            unique_id = str(uuid.uuid4())
+            save_path = os.path.join(UPLOAD_DIR, f"{unique_id}.{file_ext}")
+            try:
+                with open(save_path, "wb") as f:
+                    f.write(uploaded_file.getbuffer())
+                img = Image.open(save_path)
+                img.verify()
+                added += 1
+                # No thumbnail display in sidebar
+            except Exception as e:
+                error_files.append(f"❌ {orig_name}: {e}")
+                if os.path.exists(save_path):
+                    os.remove(save_path)
+        if added:
             delete_index_files()
-            
-            # Update path
-            st.session_state.custom_images_path = current_dir
+            st.session_state.custom_images_path = os.path.abspath(UPLOAD_DIR)
             st.session_state.force_reindex = True
-            st.success(f"Image folder set to: {current_dir}")
+            st.success(f"Added {added} images to the search database.")
+            # Change uploader key to reset uploader and prevent re-upload loop
+            st.session_state.uploader_key = str(uuid.uuid4())
             st.rerun()
-        except Exception as e:
-            st.error(f"Error setting folder path: {str(e)}")
-    
+        if error_files:
+            st.error("\n".join(error_files))
     st.markdown("---")
     top_k = st.slider("Number of results", min_value=1, max_value=50, value=9)
-    threshold = st.slider("🎯 Similarity threshold", min_value=0.0, max_value=1.0, value=0.2, step=0.01)
+    threshold = st.slider("Similarity threshold", min_value=0.0, max_value=1.0, value=0.2, step=0.01)
     
     # Add scaling options
     enable_scaling = st.checkbox("📈 Enable softmax scaling", value=False)
@@ -529,7 +561,7 @@ with tab1:
 
 # Image search tab
 with tab2:
-    st.write("### 📤 Upload Images")
+    #st.write("### 📤 Upload Images")
     
     # Add option to upload multiple images for the database
     if IS_STREAMLIT_CLOUD:
