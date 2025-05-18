@@ -21,5 +21,10 @@ if __name__ == "__main__":
         
     print(f"Launching Streamlit app from {main_path}")
     
+    # Set environment variables if they're not already set
+    # This helps when running locally vs in Streamlit Cloud
+    if "STREAMLIT_SERVER_PORT" not in os.environ:
+        os.environ["STREAMLIT_SERVER_PORT"] = "8501"
+    
     # Launch Streamlit using subprocess - the modern way to start Streamlit
     subprocess.run(["streamlit", "run", main_path], check=True)

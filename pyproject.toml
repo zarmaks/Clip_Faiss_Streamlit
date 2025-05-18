@@ -28,4 +28,5 @@ dependencies = [
 
 
 [tool.setuptools]
-packages = ["clip_faiss_search"]
+packages = ["src"]
+package-dir = {"" = "."}

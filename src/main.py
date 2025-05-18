@@ -6,7 +6,7 @@ import streamlit as st
 import os
 import time
 import shutil
-from config import IMAGES_PATH, OUTPUT_INDEX_PATH
+from config import IMAGES_PATH, OUTPUT_INDEX_PATH, UPLOAD_DIR
 from PIL import Image
 import json
 import datetime
@@ -16,9 +16,14 @@ from sklearn.manifold import TSNE
 import io
 import base64
 from matplotlib.offsetbox import OffsetImage, AnnotationBbox
+import uuid
 
-# Create index directory if it doesn't exist
+# Detect if running in Streamlit Cloud environment
+IS_STREAMLIT_CLOUD = os.environ.get('STREAMLIT_RUNTIME_ENV') == 'cloud'
+
+# Create necessary directories if they don't exist
 os.makedirs(os.path.dirname(OUTPUT_INDEX_PATH), exist_ok=True)
+os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 # Initialize session state variables to persist data between reruns
 if "custom_images_path" not in st.session_state:
@@ -208,7 +213,7 @@ def get_embeddings_for_tsne(model, index, image_paths):
         raise ValueError("No valid embeddings could be generated")
 
 # Function to create t-SNE visualization of all images
-def create_tsne_visualization(embeddings, image_paths, perplexity=30, n_iter=1000, thumbnail_size=(50, 50)):
+def create_tsne_visualization(embeddings, image_paths, perplexity=15, n_iter=1000, thumbnail_size=(50, 50)):
     """
     Create a t-SNE visualization of all images based on their embeddings
     
@@ -474,7 +479,17 @@ with tab2:
                 model, index, image_paths, metadata_list = prepare_index()
                 
                 if index is not None and image_paths:
-                    query_image = Image.open(query_img)
+                    # Create a unique filename for the uploaded image
+                    unique_id = str(uuid.uuid4())
+                    temp_img_path = os.path.join(UPLOAD_DIR, f"{unique_id}.{query_img.name.split('.')[-1]}")
+                    
+                    # Save the uploaded file temporarily
+                    with open(temp_img_path, "wb") as f:
+                        f.write(query_img.getbuffer())
+                    
+                    # Open the saved image
+                    query_image = Image.open(temp_img_path)
+                    
                     # Get metadata filters if enabled
                     filters = metadata_filters if use_metadata else None
                     
