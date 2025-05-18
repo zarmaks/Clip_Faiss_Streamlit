@@ -1,0 +1,6 @@
+[server]
+fileWatcherType = "poll"
+maxUploadSize = 200
+
+[global]
+dataFrameSerialization = "legacy"
