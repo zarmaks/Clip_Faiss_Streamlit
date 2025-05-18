@@ -1,4 +1,3 @@
-# System dependencies required for the application
 build-essential
 libopenblas-dev
 libomp-dev
