@@ -9,3 +9,5 @@ streamlit>=1.20.0
 tqdm>=4.64.0
 requests>=2.28.0
 watchdog>=2.3.0
+ftfy>=6.1.0
+spacy>=3.0.0

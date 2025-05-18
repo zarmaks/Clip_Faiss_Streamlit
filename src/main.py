@@ -25,9 +25,19 @@ IS_STREAMLIT_CLOUD = os.environ.get('STREAMLIT_RUNTIME_ENV') == 'cloud'
 os.makedirs(os.path.dirname(OUTPUT_INDEX_PATH), exist_ok=True)
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
+# Debug information for Streamlit Cloud
+if IS_STREAMLIT_CLOUD:
+    st.sidebar.markdown("### Debugging Info")
+    st.sidebar.write(f"Running in Streamlit Cloud: {IS_STREAMLIT_CLOUD}")
+    st.sidebar.write(f"Python version: {os.sys.version}")
+    st.sidebar.write(f"Current working directory: {os.getcwd()}")
+    st.sidebar.write(f"UPLOAD_DIR absolute path: {os.path.abspath(UPLOAD_DIR)}")
+    st.sidebar.write(f"Files in UPLOAD_DIR: {os.listdir(UPLOAD_DIR) if os.path.exists(UPLOAD_DIR) else 'Directory not found'}")
+
 # Initialize session state variables to persist data between reruns
 if "custom_images_path" not in st.session_state:
-    st.session_state.custom_images_path = IMAGES_PATH
+    # Make sure to use absolute paths
+    st.session_state.custom_images_path = os.path.abspath(IMAGES_PATH)
 if "force_reindex" not in st.session_state:
     st.session_state.force_reindex = False
 
@@ -35,7 +45,19 @@ if "force_reindex" not in st.session_state:
 @st.cache_resource(show_spinner=False)
 def load_model():
     with st.spinner("Loading CLIP model..."):
-        return SentenceTransformer('clip-ViT-B-32')
+        try:
+            # Set a longer timeout for downloads in cloud environment
+            if IS_STREAMLIT_CLOUD:
+                import huggingface_hub
+                huggingface_hub.constants.HF_HUB_DOWNLOAD_TIMEOUT = 300  # 5 minutes
+            
+            # Load the model
+            return SentenceTransformer('clip-ViT-B-32')
+        except Exception as e:
+            st.error(f"Error loading CLIP model: {str(e)}")
+            st.info("This could be due to network issues or memory constraints. Please try refreshing the page.")
+            # Return a placeholder to avoid breaking everything
+            return None
 
 # Function to delete index files to force reindexing
 def delete_index_files():
@@ -100,12 +122,32 @@ def prepare_index(_images_path=None):
             if not os.path.exists(images_path):
                 st.error(f"Images directory not found: {images_path}")
                 st.info("Please select a valid images directory in the sidebar.")
-                return model, None, [], []
                 
-            embeddings, image_paths, metadata_list = generate_clip_embeddings(images_path, model)
+                # Try to create the directory
+                try:
+                    os.makedirs(images_path, exist_ok=True)
+                    st.success(f"Created directory: {images_path}")
+                except Exception as e:
+                    st.error(f"Unable to create directory: {str(e)}")
+                
+                if IS_STREAMLIT_CLOUD:
+                    # In cloud environment, fall back to UPLOAD_DIR
+                    backup_path = os.path.abspath(UPLOAD_DIR)
+                    st.info(f"Falling back to upload directory: {backup_path}")
+                    images_path = backup_path
+                else:
+                    return model, None, [], []
             
-            if not image_paths:
-                st.error(f"No images found in {images_path}")
+            try:
+                embeddings, image_paths, metadata_list = generate_clip_embeddings(images_path, model)
+                
+                if not image_paths:
+                    st.warning(f"No images found in {images_path}")
+                    if IS_STREAMLIT_CLOUD:
+                        st.info("Please upload some images using the Image Search tab.")
+                    return model, None, [], []
+            except Exception as e:
+                st.error(f"Error generating embeddings: {str(e)}")
                 return model, None, [], []
                 
             index = create_faiss_index(embeddings, image_paths, OUTPUT_INDEX_PATH, metadata_list)
@@ -284,8 +326,21 @@ def fig_to_image(fig):
 st.title("🔍 CLIP Image Search with FAISS")
 st.markdown("Search images using natural language or upload an image for similarity search.")
 
-# Show current folder info
-st.info(f"💾 Current images folder: {st.session_state.custom_images_path}")
+# Show current folder info and image count
+try:
+    image_count = sum(1 for f in os.listdir(st.session_state.custom_images_path) 
+                     if f.lower().endswith(('.jpg', '.jpeg', '.png')))
+    
+    if image_count > 0:
+        st.info(f"💾 Current images folder: {st.session_state.custom_images_path} ({image_count} images)")
+    else:
+        st.warning(f"💾 Current images folder: {st.session_state.custom_images_path} (No images found)")
+        
+        if IS_STREAMLIT_CLOUD:
+            st.info("👉 Please upload some images using the Image Search tab.")
+except Exception as e:
+    st.info(f"💾 Current images folder: {st.session_state.custom_images_path}")
+    st.warning(f"Unable to access image folder: {str(e)}")
 
 # Add sidebar for additional options
 with st.sidebar:
@@ -470,28 +525,66 @@ with tab1:
 
 # Image search tab
 with tab2:
-    query_img = st.file_uploader("📤 Upload an image for searching:", type=["jpg", "jpeg", "png"])
+    st.write("### 📤 Upload Images")
+    
+    # Add option to upload multiple images for the database
+    if IS_STREAMLIT_CLOUD:
+        st.info("Running in Streamlit Cloud. You can upload images directly here to build your image database.")
+        
+        uploaded_files = st.file_uploader("Upload images to your database:", 
+                                         type=["jpg", "jpeg", "png"], 
+                                         accept_multiple_files=True)
+        
+        if uploaded_files:
+            with st.spinner(f"Adding {len(uploaded_files)} images to your database..."):
+                for uploaded_file in uploaded_files:
+                    # Create a unique filename
+                    unique_id = str(uuid.uuid4())
+                    file_ext = uploaded_file.name.split('.')[-1]
+                    save_path = os.path.join(UPLOAD_DIR, f"{unique_id}.{file_ext}")
+                    
+                    # Save the file
+                    with open(save_path, "wb") as f:
+                        f.write(uploaded_file.getbuffer())
+                
+                # Force reindexing after adding new images
+                st.session_state.force_reindex = True
+                st.success(f"Added {len(uploaded_files)} images to the database.")
+                st.info("The system will automatically reindex your images.")
+    
+    st.write("### 🔎 Search by Image")
+    query_img = st.file_uploader("Upload an image to search for similar images:", type=["jpg", "jpeg", "png"], key="search_image")
     
     col1, col2 = st.columns(2)
     search_button = col1.button("🔎 Search by Image", key="img_search")
     clear_button = col2.button("🧹 Clear Results", key="clear_img")
-    
-    if search_button and query_img:
+      if search_button and query_img:
         with st.spinner("Searching for similar images..."):
             try:
+                # Show the query image first, so it appears even if search fails
+                query_image = Image.open(query_img)
+                st.image(query_image, caption="🔍 Query Image", width=300)
+                
+                # Prepare the index
                 model, index, image_paths, metadata_list = prepare_index()
                 
-                if index is not None and image_paths:
+                # Check if we have any images indexed
+                if not image_paths:
+                    if IS_STREAMLIT_CLOUD:
+                        st.warning("No images in the database. Please upload some images first.")
+                    else:
+                        st.warning(f"No images found in {st.session_state.custom_images_path}")
+                    st.stop()
+                
+                if index is not None:
                     # Create a unique filename for the uploaded image
                     unique_id = str(uuid.uuid4())
-                    temp_img_path = os.path.join(UPLOAD_DIR, f"{unique_id}.{query_img.name.split('.')[-1]}")
+                    file_ext = query_img.name.split('.')[-1] if '.' in query_img.name else 'jpg'
+                    temp_img_path = os.path.join(UPLOAD_DIR, f"{unique_id}.{file_ext}")
                     
                     # Save the uploaded file temporarily
                     with open(temp_img_path, "wb") as f:
                         f.write(query_img.getbuffer())
-                    
-                    # Open the saved image
-                    query_image = Image.open(temp_img_path)
                     
                     # Get metadata filters if enabled
                     filters = metadata_filters if use_metadata else None
@@ -499,6 +592,7 @@ with tab2:
                     # Get the softmax temperature if enabled
                     softmax_temperature = softmax_temp if enable_scaling else 0.1
                     
+                    # Perform the search
                     query, results, scores = retrieve_similar_images(
                         query_image, 
                         model, 
@@ -512,15 +606,18 @@ with tab2:
                         softmax_temperature=softmax_temperature
                     )
                     
+                    # Show results
                     if results:
                         st.success(f"Found {len(results)} similar images above the threshold.")
-                        # Show the query image
-                        st.image(query_image, caption="🔍 Query Image", width=300)
                         display_images(results, scores, metadata_list, image_paths)
                     else:
-                        st.warning("No similar images found.")
+                        st.warning("No similar images found that meet your criteria.")
+                        st.info("Try adjusting the similarity threshold or metadata filters.")
+                else:
+                    st.error("Failed to prepare the image index.")
             except Exception as e:
-                st.error(f"An error occurred: {str(e)}")
+                st.error(f"An error occurred during the search: {str(e)}")
+                st.info("If you're seeing this error for the first time, try searching again.")
     
     if clear_button:
         st.rerun()
