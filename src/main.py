@@ -36,8 +36,12 @@ if IS_STREAMLIT_CLOUD:
 
 # Initialize session state variables to persist data between reruns
 if "custom_images_path" not in st.session_state:
-    # Make sure to use absolute paths
-    st.session_state.custom_images_path = os.path.abspath(IMAGES_PATH)
+    # Για το Streamlit Cloud, πάντα χρησιμοποίησε το UPLOAD_DIR
+    if IS_STREAMLIT_CLOUD:
+        st.session_state.custom_images_path = os.path.abspath(UPLOAD_DIR)
+    else:
+        # Για τοπική εκτέλεση, χρησιμοποίησε το IMAGES_PATH από το config.py
+        st.session_state.custom_images_path = os.path.abspath(IMAGES_PATH)
 if "force_reindex" not in st.session_state:
     st.session_state.force_reindex = False
 
