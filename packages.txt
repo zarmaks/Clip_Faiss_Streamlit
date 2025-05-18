@@ -1,11 +1,5 @@
-# Streamlit Cloud requirements - specific versions that work together
-faiss-cpu==1.7.4
-sentence-transformers==2.2.2
-numpy==1.24.3
-matplotlib==3.7.1
-pillow==9.5.0
-scikit-learn==1.2.2
-streamlit==1.22.0
-tqdm==4.65.0
-requests==2.29.0
-watchdog==3.0.0
+# System dependencies required for the application
+build-essential
+libopenblas-dev
+libomp-dev
+python3-dev
