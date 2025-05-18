@@ -551,14 +551,14 @@ with tab2:
                 st.session_state.force_reindex = True
                 st.success(f"Added {len(uploaded_files)} images to the database.")
                 st.info("The system will automatically reindex your images.")
-    
-    st.write("### 🔎 Search by Image")
+      st.write("### 🔎 Search by Image")
     query_img = st.file_uploader("Upload an image to search for similar images:", type=["jpg", "jpeg", "png"], key="search_image")
     
     col1, col2 = st.columns(2)
     search_button = col1.button("🔎 Search by Image", key="img_search")
     clear_button = col2.button("🧹 Clear Results", key="clear_img")
-      if search_button and query_img:
+    
+    if search_button and query_img:
         with st.spinner("Searching for similar images..."):
             try:
                 # Show the query image first, so it appears even if search fails
