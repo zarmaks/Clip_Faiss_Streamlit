@@ -16,6 +16,7 @@ authors = [
 dependencies = [
     "faiss-cpu==1.7.4",
     "sentence-transformers==2.2.2",
+    "huggingface-hub<0.8.0",
     "matplotlib>=3.7",
     "pillow>=9.0",
     "numpy<2.0.0,>=1.22",
