@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # CLIP-FAISS Image Search 🔍
 
 An image search application that uses OpenAI CLIP (Contrastive Language-Image Pretraining) and FAISS (Facebook AI Similarity Search) to find similar images based on text descriptions, other images, or metadata.
@@ -165,3 +166,6 @@ For a complete list of dependencies, see the `pyproject.toml` file.
 ## 📄 License
 
 [MIT](LICENSE)
+=======
+# Clip_Faiss_Streamlit
+>>>>>>> 5cd40f5020e87029df82710c16b49f68edf28cc5
