@@ -294,19 +294,22 @@ with st.sidebar:
     # Directory selection
     st.subheader("📁 Image Directory")
     current_dir = st.text_input("Current image folder", value=st.session_state.custom_images_path)
-    
-    # Change directory button
+      # Change directory button
     if st.button("📂 Set Folder Path") and current_dir:
-        if os.path.exists(current_dir):
+        try:
+            # Create the directory if it doesn't exist
+            os.makedirs(current_dir, exist_ok=True)
+            
             # Delete index files to force regeneration
             delete_index_files()
+            
             # Update path
             st.session_state.custom_images_path = current_dir
             st.session_state.force_reindex = True
-            st.success(f"Image folder changed to: {current_dir}")
+            st.success(f"Image folder set to: {current_dir}")
             st.rerun()
-        else:
-            st.error(f"Directory does not exist: {current_dir}")
+        except Exception as e:
+            st.error(f"Error setting folder path: {str(e)}")
     
     st.markdown("---")
     top_k = st.slider("Number of results", min_value=1, max_value=50, value=9)
