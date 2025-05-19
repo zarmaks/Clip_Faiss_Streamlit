@@ -342,22 +342,6 @@ def fig_to_image(fig):
 st.title("🔍 CLIP Image Search with FAISS")
 st.markdown("Search images using natural language or upload an image for similarity search.")
 
-# Show current folder info and image count
-try:
-    image_count = sum(1 for f in os.listdir(st.session_state.custom_images_path) 
-                     if f.lower().endswith(('.jpg', '.jpeg', '.png')))
-    
-    if image_count > 0:
-        st.info(f"💾 Current images folder: {st.session_state.custom_images_path} ({image_count} images)")
-    else:
-        st.warning(f"💾 Current images folder: {st.session_state.custom_images_path} (No images found)")
-        
-        if IS_STREAMLIT_CLOUD:
-            st.info("👉 Please upload some images using the Image Search tab.")
-except Exception as e:
-    st.info(f"💾 Current images folder: {st.session_state.custom_images_path}")
-    st.warning(f"Unable to access image folder: {str(e)}")
-
 # Add sidebar for additional options
 with st.sidebar:
     st.header("⚙️ Search Options")
@@ -523,6 +507,22 @@ with tab1:
     search_button = col1.button("🔎 Search by Text", key="text_search")
     clear_button = col2.button("🧹 Clear Results", key="clear_text")
     
+    # Show current folder info and image count (moved here)
+    try:
+        image_count = sum(1 for f in os.listdir(st.session_state.custom_images_path) 
+                         if f.lower().endswith(('.jpg', '.jpeg', '.png')))
+        
+        if image_count > 0:
+            st.info(f"💾 Current images folder: {st.session_state.custom_images_path} ({image_count} images)")
+        else:
+            st.warning(f"💾 Current images folder: {st.session_state.custom_images_path} (No images found)")
+            
+            if IS_STREAMLIT_CLOUD:
+                st.info("👉 Please upload some images using the Image Search tab.")
+    except Exception as e:
+        st.info(f"💾 Current images folder: {st.session_state.custom_images_path}")
+        st.warning(f"Unable to access image folder: {str(e)}")
+
     if search_button and query_text:
         with st.spinner("Searching for similar images..."):
             try:
