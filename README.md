@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # CLIP-FAISS Image Search 🔍
 
 An image search application that uses OpenAI CLIP (Contrastive Language-Image Pretraining) and FAISS (Facebook AI Similarity Search) to find similar images based on text descriptions, other images, or metadata.
@@ -17,9 +16,7 @@ An image search application that uses OpenAI CLIP (Contrastive Language-Image Pr
 - 4GB RAM minimum (8GB recommended)
 - At least 1GB of free disk space
 
-## 📥 Installation
-
-### Using Conda
+## 📥 Installation & Local Development
 
 1. **Clone the repository**:
    ```bash
@@ -27,40 +24,33 @@ An image search application that uses OpenAI CLIP (Contrastive Language-Image Pr
    cd clip-faiss-search
    ```
 
-2. **Create and activate the environment from the environment.yml file**:
-   ```bash
-   conda env create -f environment.yml
-   conda activate clip_faiss_env
-   ```
-
-3. **Install the project and its dependencies**:
-   ```bash
-   pip install -e .
-   ```
-
-### Using Pip
-
-1. **Clone the repository**:
-   ```bash
-   git clone https://github.com/yourusername/clip-faiss-search.git
-   cd clip-faiss-search
-   ```
-
-2. **Create a virtual environment** (optional but recommended):
+2. **Create a virtual environment with Python 3.10**:
    ```bash
    python -m venv venv
-   # On Windows
-   venv\Scripts\activate
-   # On macOS/Linux
-   source venv/bin/activate
+   # or, if you have multiple Python versions:
+   py -3.10 -m venv venv
    ```
 
-3. **Install the project and its dependencies**:
+3. **Activate the virtual environment**:
+   - On Windows (Command Prompt):
+     ```cmd
+     venv\Scripts\activate.bat
+     ```
+   - On Windows (PowerShell):
+     ```powershell
+     .\venv\Scripts\Activate
+     ```
+   - On macOS/Linux:
+     ```bash
+     source venv/bin/activate
+     ```
+
+4. **Install the project and its dependencies**:
    ```bash
    pip install -e .
+   # or, if you use requirements.txt:
+   pip install -r requirements.txt
    ```
-
-
 
 ## 🚀 Starting the Application
 
@@ -72,10 +62,8 @@ An image search application that uses OpenAI CLIP (Contrastive Language-Image Pr
 
 2. **Run the application**:
    ```bash
-   # Option 1: Using the run.py script (recommended)
    python run.py
-   
-   # Option 2: Running the Streamlit app directly
+   # or
    streamlit run src/main.py
    ```
 
@@ -84,16 +72,22 @@ An image search application that uses OpenAI CLIP (Contrastive Language-Image Pr
 ## 🔧 Configuration
 
 - **Changing the images folder**: You can change the images folder either by editing the `config.py` file or via the UI in the sidebar.
-  
-- **Setting search parameters**:
-  - Similarity threshold
-  - Number of results
-  - Softmax scaling
+- **Setting search parameters**: Similarity threshold, number of results, softmax scaling
+- **Metadata filters**: Date range, location (name or coordinates), camera make and model
 
-- **Metadata filters**:
-  - Date range
-  - Location (name or coordinates)
-  - Camera make and model
+## 🌐 Deploying to Streamlit Cloud
+
+1. **Push your code to GitHub** (see below).
+2. **Create a Streamlit Cloud account** at [https://streamlit.io/cloud](https://streamlit.io/cloud)
+3. **Deploy the app**:
+   - Log in to Streamlit Cloud
+   - Click "New app"
+   - Select your GitHub repository
+   - Set the main file path to `src/main.py`
+   - Configure advanced settings:
+     - Python version: 3.10 (recommended)
+     - Requirements: Use your `pyproject.toml` or `requirements.txt`
+   - Set any required secrets in the Streamlit Cloud dashboard
 
 ## 🌐 Uploading to GitHub
 
@@ -108,23 +102,6 @@ An image search application that uses OpenAI CLIP (Contrastive Language-Image Pr
    git push -u origin main
    ```
 
-## 🚀 Deploying to Streamlit Cloud
-
-1. **Create a Streamlit Cloud account** at [https://streamlit.io/cloud](https://streamlit.io/cloud)
-
-2. **Deploy the app**:
-   - Log in to Streamlit Cloud
-   - Click "New app"
-   - Select your GitHub repository
-   - Set the main file path to `src/main.py`
-   - Configure advanced settings:
-     - Python version: 3.10 (recommended)
-     - Requirements: Use your pyproject.toml
-
-3. **Configure your app**:
-   - Set any required secrets in the Streamlit Cloud dashboard
-   - Adjust the compute resources as needed
-
 ## 📝 Note about index files
 
 The FAISS index is automatically created during the first use and stored in the `vector_index/` folder. If you change the set of images, you can regenerate the index using the "Force Reindex Images" button in the UI.
@@ -138,8 +115,9 @@ clip-faiss-search/
 │   ├── main.py              # Main file with Streamlit UI
 │   ├── faiss_utils.py       # Helper functions for CLIP+FAISS
 ├── run.py                   # Launcher script for the application
-├── environment.yml          # Conda environment specification
+├── environment.yml          # (Optional) Conda environment specification
 ├── pyproject.toml           # Project metadata and dependencies
+├── requirements.txt         # Project dependencies (for pip/Streamlit Cloud)
 ├── README.md
 ├── .gitignore
 ```
@@ -161,11 +139,8 @@ The project requires the following main dependencies:
 - tqdm
 - requests
 
-For a complete list of dependencies, see the `pyproject.toml` file.
+For a complete list of dependencies, see the `pyproject.toml` or `requirements.txt` file.
 
 ## 📄 License
 
 [MIT](LICENSE)
-=======
-# Clip_Faiss_Streamlit
->>>>>>> 5cd40f5020e87029df82710c16b49f68edf28cc5
