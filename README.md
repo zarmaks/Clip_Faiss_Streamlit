@@ -75,32 +75,6 @@ An image search application that uses OpenAI CLIP (Contrastive Language-Image Pr
 - **Setting search parameters**: Similarity threshold, number of results, softmax scaling
 - **Metadata filters**: Date range, location (name or coordinates), camera make and model
 
-## 🌐 Deploying to Streamlit Cloud
-
-1. **Push your code to GitHub** (see below).
-2. **Create a Streamlit Cloud account** at [https://streamlit.io/cloud](https://streamlit.io/cloud)
-3. **Deploy the app**:
-   - Log in to Streamlit Cloud
-   - Click "New app"
-   - Select your GitHub repository
-   - Set the main file path to `src/main.py`
-   - Configure advanced settings:
-     - Python version: 3.10 (recommended)
-     - Requirements: Use your `pyproject.toml` or `requirements.txt`
-   - Set any required secrets in the Streamlit Cloud dashboard
-
-## 🌐 Uploading to GitHub
-
-1. **Create a new repository** on GitHub
-2. **Initialize Git** in your project folder:
-   ```bash
-   git init
-   git add .
-   git commit -m "Initial commit"
-   git branch -M main
-   git remote add origin https://github.com/yourusername/clip-faiss-image-search.git
-   git push -u origin main
-   ```
 
 ## 📝 Note about index files
 
