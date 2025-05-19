@@ -1,84 +1,56 @@
 # CLIP-FAISS Image Search 🔍
 
-An image search application that uses OpenAI CLIP (Contrastive Language-Image Pretraining) and FAISS (Facebook AI Similarity Search) to find similar images based on text descriptions, other images, or metadata.
+A research tool for exploring vector embeddings and semantic search with images, powered by OpenAI CLIP and FAISS.
 
-## ✨ Features
+---
 
-- **Natural language search**: Find images by describing them with simple text
-- **Image-based search**: Upload an image and find similar ones
-- **Metadata filtering**: Filter by date, location or camera
-- **t-SNE visualization**: Visualize the semantic relationships between images
-- **Interactive UI**: User-friendly interface with Streamlit
+## 🧭 Project Overview
 
-## 🛠️ System Requirements
+**clip-faiss-search** is designed to help researchers and practitioners understand and experiment with vector embeddings for images. It enables semantic image search using both text and image queries, with advanced filtering and visualization options—all through an interactive Streamlit UI.
 
-- Python 3.10 or newer
-- 4GB RAM minimum (8GB recommended)
-- At least 1GB of free disk space
+---
 
-## 📥 Installation & Local Development
+## ✨ Key Features
 
-1. **Clone the repository**:
-   ```bash
-   git clone https://github.com/yourusername/clip-faiss-search.git
-   cd clip-faiss-search
-   ```
+- **Text-based Search:** Enter natural language queries to find semantically similar images using CLIP embeddings.
+- **Image-based Search:** Upload an image and retrieve visually similar images from your dataset.
+- **Metadata Filtering:** Filter results by metadata such as date, location, and camera information.
+- **Softmax Scaling:** Adjust the contrast of similarity scores to make thresholds more meaningful (e.g., set threshold close to 0.8).
+- **Threshold & Top-K Filtering:** Control the number of results (top-K) or set a similarity threshold.
+- **t-SNE Visualization:** Visualize the entire image dataset, grouped by semantic similarity, using t-SNE dimensionality reduction.
+- **Streamlit UI:** User-friendly, interactive interface for all operations.
 
-2. **Create a virtual environment with Python 3.10**:
-   ```bash
-   python -m venv venv
-   # or, if you have multiple Python versions:
-   py -3.10 -m venv venv
-   ```
+---
 
-3. **Activate the virtual environment**:
-   - On Windows (Command Prompt):
-     ```cmd
-     venv\Scripts\activate.bat
-     ```
-   - On Windows (PowerShell):
-     ```powershell
-     .\venv\Scripts\Activate
-     ```
-   - On macOS/Linux:
-     ```bash
-     source venv/bin/activate
-     ```
+## 🛠️ Usage Modes
 
-4. **Install the project and its dependencies**:
-   ```bash
-   pip install -e .
-   # or, if you use requirements.txt:
-   pip install -r requirements.txt
-   ```
+- **Text Query Search:** Enter a description to find matching images.
+- **Image Query Search:** Upload an image to find similar ones.
+- **Metadata-only Search:** Filter images using metadata without a text or image query.
+- **Semantic Visualization:** Explore the dataset’s structure with t-SNE clustering.
 
-## 🚀 Starting the Application
+---
 
-1. **Configure the images folder** in the `src/config.py` file:
-   ```python
-   # Change this to your images folder path
-   IMAGES_PATH = r"C:\\path\\to\\your\\images"
-   ```
+## ⚙️ Technical Highlights
 
-2. **Run the application**:
-   ```bash
-   python run.py
-   # or
-   streamlit run src/main.py
-   ```
+- **CLIP Embeddings:** Used for both text and image queries, enabling cross-modal search.
+- **FAISS Indexing:** Fast nearest-neighbor search over high-dimensional vectors.
+- **Softmax Scaling:** Option to apply softmax scaling to similarity scores for better contrast.
+- **Flexible Filtering:** Supports both threshold-based and top-K result filtering.
+- **Metadata Extraction:** Extracts and utilizes EXIF metadata for advanced filtering.
+- **Visualization:** t-SNE plots for exploring semantic clusters in your dataset.
 
-   The application will automatically open in your default browser, typically at http://localhost:8501
+---
 
-## 🔧 Configuration
+## 🧪 Research Context
 
-- **Changing the images folder**: You can change the images folder either by editing the `config.py` file or via the UI in the sidebar.
-- **Setting search parameters**: Similarity threshold, number of results, softmax scaling
-- **Metadata filters**: Date range, location (name or coordinates), camera make and model
+This tool is part of a broader research effort (see [LightlyGPT](https://github.com/zarmaks/LightlyGPT)) to build agentic AI systems that allow users to interact with image datasets using natural language—no SQL, no dashboards, just questions and answers. The approach combines:
 
+- **LangChain** for reasoning,
+- **CLIP** for visual understanding,
+- **ChromaDB** (in the capstone) or **FAISS** (in this tool) for fast retrieval.
 
-## 📝 Note about index files
-
-The FAISS index is automatically created during the first use and stored in the `vector_index/` folder. If you change the set of images, you can regenerate the index using the "Force Reindex Images" button in the UI.
+---
 
 ## 📚 Project Structure
 
@@ -86,22 +58,21 @@ The FAISS index is automatically created during the first use and stored in the 
 clip-faiss-search/
 ├── src/
 │   ├── config.py            # Application settings
-│   ├── main.py              # Main file with Streamlit UI
+│   ├── main.py              # Main Streamlit UI and logic
 │   ├── faiss_utils.py       # Helper functions for CLIP+FAISS
-├── run.py                   # Launcher script for the application
+├── run.py                   # Launcher script
 ├── environment.yml          # (Optional) Conda environment specification
 ├── pyproject.toml           # Project metadata and dependencies
-├── requirements.txt         # Project dependencies (for pip/Streamlit Cloud)
+├── requirements.txt         # Project dependencies
 ├── README.md
 ├── .gitignore
 ```
 
-> **Note:**  
-> The `vector_index/` folder, where the FAISS index files are stored, is created automatically during the first use and is excluded from version control via `.gitignore`.
+---
 
 ## 📋 Requirements
 
-The project requires the following main dependencies:
+Main dependencies:
 
 - faiss-cpu (1.7.4)
 - sentence-transformers (2.2.2)
@@ -113,7 +84,47 @@ The project requires the following main dependencies:
 - tqdm
 - requests
 
-For a complete list of dependencies, see the `pyproject.toml` or `requirements.txt` file.
+For a complete list, see `pyproject.toml` or `requirements.txt`.
+
+---
+## 🚀 Installation
+
+1. **Clone the repository:**
+   ```bash
+   git clone https://github.com/zarmaks/Clip_Faiss_Streamlit.git
+   cd Clip_Faiss_Streamlit
+   ```
+
+2. **(Recommended) Create a virtual environment:**
+   ```bash
+   python -m venv .venv
+   source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+   ```
+
+3. **Install dependencies:**
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+4. **Run the Streamlit app:**
+   ```bash
+   streamlit run src/main.py
+   ```
+
+> For advanced users, you can also use `pyproject.toml` with Poetry.
+
+---
+
+Add this section after the "Requirements" and before the "License" in your README.md for a complete and user-friendly documentation!
+
+## 📝 Note about index files
+
+The FAISS index is automatically created during the first use and stored in the `vector_index/` folder. If you change the set of images, you can regenerate the index using the "Force Reindex Images" button in the UI.
+
+> **Note:**  
+> The `vector_index/` folder is excluded from version control via `.gitignore`.
+
+---
 
 ## 📄 License
 
