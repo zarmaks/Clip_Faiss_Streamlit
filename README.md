@@ -61,7 +61,6 @@ clip-faiss-search/
 │   ├── main.py              # Main Streamlit UI and logic
 │   ├── faiss_utils.py       # Helper functions for CLIP+FAISS
 ├── run.py                   # Launcher script
-├── environment.yml          # (Optional) Conda environment specification
 ├── pyproject.toml           # Project metadata and dependencies
 ├── requirements.txt         # Project dependencies
 ├── README.md
