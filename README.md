@@ -1,8 +1,8 @@
 # CLIP-FAISS Image Search 🔍
 
 A research tool for exploring vector embeddings and semantic search with images, powered by OpenAI CLIP and FAISS.
-live demo: https://semantic-image-clip-faiss.streamlit.app/
 ---
+live demo on Streamlit Cloud: https://semantic-image-clip-faiss.streamlit.app/
 
 ## 🧭 Project Overview
 
