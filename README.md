@@ -1,7 +1,7 @@
 # CLIP-FAISS Image Search 🔍
 
 A research tool for exploring vector embeddings and semantic search with images, powered by OpenAI CLIP and FAISS.
-
+live demo: https://semantic-image-clip-faiss.streamlit.app/
 ---
 
 ## 🧭 Project Overview
@@ -44,7 +44,7 @@ A research tool for exploring vector embeddings and semantic search with images,
 
 ## 🧪 Research Context
 
-This tool is part of a broader research effort (see [LightlyGPT](https://github.com/zarmaks/LightlyGPT)) to build agentic AI systems that allow users to interact with image datasets using natural language—no SQL, no dashboards, just questions and answers. The approach combines:
+This tool is part of a broader research effort (see [LightlyGPT](https://github.com/zarmaks/Lightl-yGPT)) to build agentic AI systems that allow users to interact with image datasets using natural language—no SQL, no dashboards, just questions and answers. The approach combines:
 
 - **LangChain** for reasoning,
 - **CLIP** for visual understanding,
